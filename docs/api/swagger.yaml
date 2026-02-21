@@ -1,0 +1,84 @@
+openapi: 3.0.0
+paths:
+  /users:
+    post:
+      operationId: UsersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+      tags: &a1
+        - users
+    get:
+      operationId: UsersController_list
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponseDto'
+      tags: *a1
+info:
+  title: HaxFootball API
+  description: ''
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    CreateUserDto:
+      type: object
+      properties:
+        discordId:
+          type: string
+          example: '123456789012345678'
+        username:
+          type: string
+          minLength: 1
+          maxLength: 25
+          example: Alice
+      required:
+        - discordId
+        - username
+    UserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant:
+          type: string
+        discordId:
+          type: string
+        username:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant
+        - discordId
+        - username
+        - createdAt
+security:
+  - bearer: []

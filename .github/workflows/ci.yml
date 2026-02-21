@@ -27,13 +27,26 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Format check
-        run: pnpm exec prettier --check "src/**/*.ts" "test/**/*.ts"
+        run: pnpm exec prettier --check "src/**/*.ts" "test/**/*.ts" "docs/api/swagger.yaml"
 
       - name: Lint
         run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
 
       - name: Build
         run: pnpm run build
+
+      - name: Swagger check
+        run: pnpm run swagger:check
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          DATABASE_URL: mysql://app:app@127.0.0.1:3306/haxfootball_ci
+          JWT_PUBLIC_KEY: ci-jwt-secret
+          JWT_PRIVATE_KEY: ci-jwt-secret
+          JWT_ALGO: HS256
+          JWT_ISS: haxfootball-api
+          JWT_AUD: haxfootball-services
+          JWT_EXP: 15m
 
       - name: Unit tests
         run: pnpm exec jest --passWithNoTests
