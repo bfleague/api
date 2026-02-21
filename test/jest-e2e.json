@@ -1,0 +1,13 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": "specs/.*\\.e2e-spec.ts$",
+  "setupFilesAfterEnv": ["<rootDir>/support/setup.ts"],
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^sql-template-tag$": "<rootDir>/mocks/sql-template-tag.ts"
+  }
+}

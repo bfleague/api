@@ -1,0 +1,5 @@
+export enum MysqlError {
+  DUP_ENTRY = 'ER_DUP_ENTRY',
+  NO_REFERENCED_ROW = 'ER_NO_REFERENCED_ROW_2',
+  BAD_NULL = 'ER_BAD_NULL_ERROR',
+}
