@@ -6,7 +6,12 @@ import {
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Tenant } from '../auth/decorators/tenant.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
@@ -18,6 +23,7 @@ export class UsersController {
   constructor(private readonly service: UsersService) {}
 
   @Post()
+  @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ type: UserResponseDto })
   async create(
     @Tenant() tenant: string,
