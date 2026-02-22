@@ -39,6 +39,14 @@ paths:
             default: 20
             example: 20
             type: number
+        - name: username
+          required: false
+          in: query
+          schema:
+            minLength: 1
+            maxLength: 25
+            example: Alice
+            type: string
       responses:
         '200':
           description: ''
@@ -46,6 +54,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UsersPaginatedResponseDto'
+      tags: *a1
+  /users/{id}:
+    get:
+      operationId: UsersController_getByDiscordId
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+      tags: *a1
+  /users/{id}/password:
+    post:
+      operationId: UsersController_changePassword
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDto'
+      responses:
+        '204':
+          description: ''
+      tags: *a1
+  /users/{id}/confirm:
+    post:
+      operationId: UsersController_confirm
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmUserDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmUserResponseDto'
       tags: *a1
 info:
   title: HaxFootball API
@@ -72,6 +139,11 @@ components:
           minLength: 1
           maxLength: 25
           example: Alice
+        password:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
       required:
         - discordId
         - username
@@ -120,5 +192,36 @@ components:
       required:
         - items
         - pageInfo
+    ChangePasswordDto:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: secret-password
+      required:
+        - password
+    ConfirmUserDto:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: secret-password
+      required:
+        - password
+    ConfirmUserResponseDto:
+      type: object
+      properties:
+        isCorrect:
+          type: boolean
+        discordId:
+          type: string
+          nullable: true
+      required:
+        - isCorrect
+        - discordId
 security:
   - bearer: []

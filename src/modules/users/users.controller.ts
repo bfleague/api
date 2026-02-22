@@ -3,7 +3,10 @@ import {
   ConflictException,
   Controller,
   Get,
+  HttpCode,
   InternalServerErrorException,
+  NotFoundException,
+  Param,
   Post,
   Query,
 } from '@nestjs/common';
@@ -13,9 +16,12 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PagePaginationQueryDto } from '../../common/pagination/dtos/page-pagination-query.dto';
 import { Tenant } from '../auth/decorators/tenant.decorator';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { ConfirmUserDto } from './dtos/confirm-user.dto';
+import { ConfirmUserResponseDto } from './dtos/confirm-user-response.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { ListUsersQueryDto } from './dtos/list-users-query.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersPaginatedResponseDto } from './dtos/users-paginated-response.dto';
 import { UsersService } from './users.service';
@@ -50,7 +56,7 @@ export class UsersController {
   @ApiOkResponse({ type: UsersPaginatedResponseDto })
   async list(
     @Tenant() tenant: string,
-    @Query() query: PagePaginationQueryDto,
+    @Query() query: ListUsersQueryDto,
   ): Promise<UsersPaginatedResponseDto> {
     const result = await this.service.list(tenant, query);
 
@@ -62,5 +68,66 @@ export class UsersController {
     }
 
     return new UsersPaginatedResponseDto(result.value);
+  }
+
+  @Get(':id')
+  @ApiOkResponse({ type: UserResponseDto })
+  async getByDiscordId(
+    @Tenant() tenant: string,
+    @Param('id') discordId: string,
+  ): Promise<UserResponseDto> {
+    const result = await this.service.getByDiscordId(discordId, tenant);
+
+    if (result.isErr()) {
+      switch (result.error.type) {
+        case 'user_not_found':
+          throw new NotFoundException('User not found');
+        case 'persistence_error':
+          throw new InternalServerErrorException('Unexpected error');
+      }
+    }
+
+    return new UserResponseDto(result.value);
+  }
+
+  @Post(':id/password')
+  @HttpCode(204)
+  @ApiBody({ type: ChangePasswordDto })
+  async changePassword(
+    @Tenant() tenant: string,
+    @Param('id') discordId: string,
+    @Body() body: ChangePasswordDto,
+  ): Promise<void> {
+    const result = await this.service.changePassword(discordId, body, tenant);
+
+    if (result.isErr()) {
+      switch (result.error.type) {
+        case 'user_not_found':
+          throw new NotFoundException('User not found');
+        case 'persistence_error':
+          throw new InternalServerErrorException('Unexpected error');
+      }
+    }
+  }
+
+  @Post(':id/confirm')
+  @HttpCode(200)
+  @ApiBody({ type: ConfirmUserDto })
+  @ApiOkResponse({ type: ConfirmUserResponseDto })
+  async confirm(
+    @Tenant() tenant: string,
+    @Param('id') discordId: string,
+    @Body() body: ConfirmUserDto,
+  ): Promise<ConfirmUserResponseDto> {
+    const result = await this.service.confirm(discordId, body, tenant);
+
+    if (result.isErr()) {
+      switch (result.error.type) {
+        case 'persistence_error':
+          throw new InternalServerErrorException('Unexpected error');
+      }
+    }
+
+    return new ConfirmUserResponseDto(result.value);
   }
 }

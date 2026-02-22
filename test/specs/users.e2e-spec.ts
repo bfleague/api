@@ -59,6 +59,31 @@ describe('Users (e2e)', () => {
     expect(secondResponse.status).toBe(409);
   });
 
+  it('returns 409 when creating a duplicate username in the same tenant', async () => {
+    const tenant = tenantFixture('tenant-dup-username');
+    const username = 'Alice';
+
+    const firstResponse = await post(
+      '/users',
+      {
+        discordId: discordIdFixture(),
+        username,
+      },
+      tenant.token,
+    );
+    expect(firstResponse.status).toBe(201);
+
+    const secondResponse = await post(
+      '/users',
+      {
+        discordId: discordIdFixture(),
+        username,
+      },
+      tenant.token,
+    );
+    expect(secondResponse.status).toBe(409);
+  });
+
   it('isolates users by tenant', async () => {
     const tenantA = tenantFixture('tenant-a');
     const tenantB = tenantFixture('tenant-b');
@@ -186,6 +211,164 @@ describe('Users (e2e)', () => {
 
     const response = await get('/users?page=0', tenant.token);
     expect(response.status).toBe(400);
+  });
+
+  it('filters users list by username', async () => {
+    const tenant = tenantFixture('tenant-list-filter-username');
+    const username = 'FilterUser';
+
+    await post(
+      '/users',
+      {
+        discordId: discordIdFixture(),
+        username,
+      },
+      tenant.token,
+    );
+
+    await post(
+      '/users',
+      {
+        discordId: discordIdFixture(),
+        username: 'OtherUser',
+      },
+      tenant.token,
+    );
+
+    const response = await get(
+      `/users?username=${encodeURIComponent(username)}`,
+      tenant.token,
+    );
+    expect(response.status).toBe(200);
+    expect(await json(response)).toEqual(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({
+            username,
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('gets a user by discord id', async () => {
+    const tenant = tenantFixture('tenant-get-by-id');
+    const discordId = discordIdFixture();
+    const username = 'LookupUser';
+
+    const createResponse = await post(
+      '/users',
+      {
+        discordId,
+        username,
+      },
+      tenant.token,
+    );
+    expect(createResponse.status).toBe(201);
+
+    const getResponse = await get(`/users/${discordId}`, tenant.token);
+    expect(getResponse.status).toBe(200);
+    expect(await json(getResponse)).toEqual(
+      expect.objectContaining({
+        discordId,
+        username,
+        tenant: tenant.tenant,
+      }),
+    );
+  });
+
+  it('changes password and confirms credentials', async () => {
+    const tenant = tenantFixture('tenant-change-password');
+    const discordId = discordIdFixture();
+    const username = 'PasswordUser';
+
+    const createResponse = await post(
+      '/users',
+      {
+        discordId,
+        username,
+        password: 'old-pass',
+      },
+      tenant.token,
+    );
+    expect(createResponse.status).toBe(201);
+
+    const confirmBefore = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'old-pass',
+      },
+      tenant.token,
+    );
+    expect(confirmBefore.status).toBe(200);
+    expect(await json(confirmBefore)).toEqual({
+      isCorrect: true,
+      discordId,
+    });
+
+    const changeResponse = await post(
+      `/users/${discordId}/password`,
+      {
+        password: 'new-pass',
+      },
+      tenant.token,
+    );
+    expect(changeResponse.status).toBe(204);
+
+    const confirmOld = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'old-pass',
+      },
+      tenant.token,
+    );
+    expect(confirmOld.status).toBe(200);
+    expect(await json(confirmOld)).toEqual({
+      isCorrect: false,
+      discordId,
+    });
+
+    const confirmNew = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'new-pass',
+      },
+      tenant.token,
+    );
+    expect(confirmNew.status).toBe(200);
+    expect(await json(confirmNew)).toEqual({
+      isCorrect: true,
+      discordId,
+    });
+  });
+
+  it('returns false on confirm when user has no password', async () => {
+    const tenant = tenantFixture('tenant-confirm-no-password');
+    const discordId = discordIdFixture();
+    const username = 'NoPasswordUser';
+
+    const createResponse = await post(
+      '/users',
+      {
+        discordId,
+        username,
+      },
+      tenant.token,
+    );
+    expect(createResponse.status).toBe(201);
+
+    const confirmResponse = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'any-pass',
+      },
+      tenant.token,
+    );
+    expect(confirmResponse.status).toBe(200);
+    expect(await json(confirmResponse)).toEqual({
+      isCorrect: false,
+      discordId,
+    });
   });
 
   it('validates the create payload', async () => {
