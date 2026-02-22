@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { err, ok, Result } from 'neverthrow';
+import sql, { join, Sql } from 'sql-template-tag';
 import { MysqlError } from '../../common/errors/mysql-error.enum';
 import { getPageWindow } from '../../common/pagination/utils/page.util';
 import { DatabaseService } from '../database/database.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserAlreadyExistsError } from './users.error';
 import { UserCredentials } from './types/user-credentials.type';
 import { User } from './types/user.type';
@@ -61,32 +63,13 @@ export class UsersRepository {
     `;
   }
 
-  async changePasswordByDiscordId(
-    discordId: string,
-    password: string,
-    tenant: string,
-  ): Promise<Result<void, PersistenceError>> {
-    const updateResult = await this.db.query`
-      UPDATE users
-      SET password = ${password}
-      WHERE tenant = ${tenant}
-      AND discord_id = ${discordId}
-    `;
-
-    if (updateResult.isErr()) {
-      return err(updateResult.error);
-    }
-
-    return ok();
-  }
-
   async insertUser(
     input: CreateUserDto,
     tenant: string,
   ): Promise<Result<void, UserAlreadyExistsError | PersistenceError>> {
     const insertResult = await this.db.query`
-      INSERT INTO users (tenant, discord_id, username, password)
-      VALUES (${tenant}, ${input.discordId}, ${input.username}, ${input.password ?? null})
+      INSERT INTO users (tenant, discord_id, username, password, role)
+      VALUES (${tenant}, ${input.discordId}, ${input.username}, ${input.password ?? null}, ${input.role ?? 'default'})
     `;
 
     if (insertResult.isErr()) {
@@ -97,6 +80,50 @@ export class UsersRepository {
           });
         default:
           return err(insertResult.error);
+      }
+    }
+
+    return ok();
+  }
+
+  async updateByDiscordId(
+    discordId: string,
+    input: UpdateUserDto,
+    tenant: string,
+  ): Promise<Result<void, UserAlreadyExistsError | PersistenceError>> {
+    const changes: Sql[] = [];
+
+    if (input.username !== undefined) {
+      changes.push(sql`username = ${input.username}`);
+    }
+
+    if (input.password !== undefined) {
+      changes.push(sql`password = ${input.password}`);
+    }
+
+    if (input.role !== undefined) {
+      changes.push(sql`role = ${input.role}`);
+    }
+
+    if (changes.length === 0) {
+      return ok();
+    }
+
+    const updateResult = await this.db.query(sql`
+      UPDATE users
+      SET ${join(changes, ', ')}
+      WHERE tenant = ${tenant}
+      AND discord_id = ${discordId}
+    `);
+
+    if (updateResult.isErr()) {
+      switch (updateResult.error.code) {
+        case MysqlError.DUP_ENTRY:
+          return err({
+            type: 'user_already_exists',
+          });
+        default:
+          return err(updateResult.error);
       }
     }
 

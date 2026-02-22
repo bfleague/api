@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { USER_ROLES, UserRole } from '../types/user-role.type';
 import { User } from '../types/user.type';
 
 export class UserResponseDto {
@@ -16,6 +17,9 @@ export class UserResponseDto {
   @ApiProperty()
   username: string;
 
+  @ApiProperty({ enum: USER_ROLES })
+  role: UserRole;
+
   @ApiProperty({ name: 'created_at', type: String, format: 'date-time' })
   @Expose({ name: 'created_at' })
   createdAt: Date;
@@ -25,6 +29,7 @@ export class UserResponseDto {
     this.tenant = user.tenant;
     this.discordId = user.discordId;
     this.username = user.username;
+    this.role = user.role;
     this.createdAt = user.createdAt;
   }
 }

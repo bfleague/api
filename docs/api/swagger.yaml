@@ -72,9 +72,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
       tags: *a1
-  /users/{id}/password:
-    post:
-      operationId: UsersController_changePassword
+    put:
+      operationId: UsersController_update
       parameters:
         - name: id
           required: true
@@ -86,10 +85,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangePasswordDto'
+              $ref: '#/components/schemas/UpdateUserDto'
       responses:
-        '204':
+        '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
       tags: *a1
   /users/{id}/confirm:
     post:
@@ -142,8 +145,15 @@ components:
         password:
           type: string
           nullable: true
-          minLength: 1
-          maxLength: 255
+          minLength: 4
+          maxLength: 20
+        role:
+          type: string
+          enum: &a2
+            - admin
+            - mod
+            - default
+          example: default
       required:
         - discordId
         - username
@@ -158,6 +168,9 @@ components:
           type: string
         username:
           type: string
+        role:
+          type: string
+          enum: *a2
         created_at:
           type: string
           format: date-time
@@ -166,6 +179,7 @@ components:
         - tenant
         - discord_id
         - username
+        - role
         - created_at
     PageInfoDto:
       type: object
@@ -192,23 +206,30 @@ components:
       required:
         - items
         - page_info
-    ChangePasswordDto:
+    UpdateUserDto:
       type: object
       properties:
-        password:
+        username:
           type: string
           minLength: 1
-          maxLength: 255
-          example: secret-password
-      required:
-        - password
+          maxLength: 25
+          example: Alice
+        password:
+          type: string
+          nullable: true
+          minLength: 4
+          maxLength: 20
+        role:
+          type: string
+          enum: *a2
+          example: mod
     ConfirmUserDto:
       type: object
       properties:
         password:
           type: string
-          minLength: 1
-          maxLength: 255
+          minLength: 4
+          maxLength: 20
           example: secret-password
       required:
         - password

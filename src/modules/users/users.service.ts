@@ -4,10 +4,10 @@ import { ok as assert } from 'node:assert/strict';
 import { Page } from '../../common/pagination/types/page.type';
 import { paginate } from '../../common/pagination/utils/page.util';
 import { PersistenceError } from '../database/database.error';
-import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ConfirmUserDto } from './dtos/confirm-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { ConfirmationResult } from './types/confirmation-result.type';
 import { UserAlreadyExistsError, UserNotFoundError } from './users.error';
 import { User } from './types/user.type';
@@ -69,11 +69,13 @@ export class UsersService {
     return ok(userResult.value);
   }
 
-  async changePassword(
+  async update(
     discordId: string,
-    dto: ChangePasswordDto,
+    dto: UpdateUserDto,
     tenant: string,
-  ): Promise<Result<void, UserNotFoundError | PersistenceError>> {
+  ): Promise<
+    Result<User, UserNotFoundError | UserAlreadyExistsError | PersistenceError>
+  > {
     const existingUserResult = await this.repo.findByDiscordId(
       discordId,
       tenant,
@@ -90,11 +92,25 @@ export class UsersService {
       });
     }
 
-    return await this.repo.changePasswordByDiscordId(
+    const updateResult = await this.repo.updateByDiscordId(
       discordId,
-      dto.password,
+      dto,
       tenant,
     );
+
+    if (updateResult.isErr()) {
+      return err(updateResult.error);
+    }
+
+    const userResult = await this.repo.findByDiscordId(discordId, tenant);
+
+    if (userResult.isErr()) {
+      return err(userResult.error);
+    }
+
+    assert(userResult.value, 'Invariant violated: expected user to exist');
+
+    return ok(userResult.value);
   }
 
   async confirm(

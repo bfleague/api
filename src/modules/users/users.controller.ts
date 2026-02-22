@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -17,11 +18,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Tenant } from '../auth/decorators/tenant.decorator';
-import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ConfirmUserDto } from './dtos/confirm-user.dto';
 import { ConfirmUserResponseDto } from './dtos/confirm-user-response.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersPaginatedResponseDto } from './dtos/users-paginated-response.dto';
 import { UsersService } from './users.service';
@@ -90,24 +91,28 @@ export class UsersController {
     return new UserResponseDto(result.value);
   }
 
-  @Post(':id/password')
-  @HttpCode(204)
-  @ApiBody({ type: ChangePasswordDto })
-  async changePassword(
+  @Put(':id')
+  @ApiBody({ type: UpdateUserDto })
+  @ApiOkResponse({ type: UserResponseDto })
+  async update(
     @Tenant() tenant: string,
     @Param('id') discordId: string,
-    @Body() body: ChangePasswordDto,
-  ): Promise<void> {
-    const result = await this.service.changePassword(discordId, body, tenant);
+    @Body() body: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    const result = await this.service.update(discordId, body, tenant);
 
     if (result.isErr()) {
       switch (result.error.type) {
         case 'user_not_found':
           throw new NotFoundException('User not found');
+        case 'user_already_exists':
+          throw new ConflictException('User already exists');
         case 'persistence_error':
           throw new InternalServerErrorException('Unexpected error');
       }
     }
+
+    return new UserResponseDto(result.value);
   }
 
   @Post(':id/confirm')

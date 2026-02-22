@@ -36,6 +36,22 @@ export async function post(
   });
 }
 
+export async function put(
+  path: string,
+  payload: unknown,
+  token?: string,
+): Promise<Response> {
+  const { baseUrl } = getE2ERuntime();
+  return fetch(`${baseUrl}${resolvePath(path)}`, {
+    method: 'PUT',
+    headers: {
+      'content-type': 'application/json',
+      ...authHeaders(token),
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function json(response: Response): Promise<unknown> {
   return response.json() as Promise<unknown>;
 }

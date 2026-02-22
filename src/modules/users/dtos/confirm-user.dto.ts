@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, Length } from 'class-validator';
 
 export class ConfirmUserDto {
-  @ApiProperty({ minLength: 1, maxLength: 255, example: 'secret-password' })
+  @ApiProperty({ minLength: 4, maxLength: 20, example: 'secret-password' })
   @IsString()
-  @Length(1, 255)
+  @Length(4, 20)
   password!: string;
 }

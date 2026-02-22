@@ -1,4 +1,4 @@
-import { get, json, post } from '../support/client';
+import { get, json, post, put } from '../support/client';
 import { discordIdFixture, tenantFixture } from '../fixtures';
 
 describe('Users (e2e)', () => {
@@ -30,6 +30,7 @@ describe('Users (e2e)', () => {
       expect.objectContaining({
         tenant: tenant.tenant,
         username: 'Alice',
+        role: 'default',
       }),
     );
   });
@@ -273,8 +274,72 @@ describe('Users (e2e)', () => {
         discord_id: discordId,
         username,
         tenant: tenant.tenant,
+        role: 'default',
       }),
     );
+  });
+
+  it('updates user fields with put', async () => {
+    const tenant = tenantFixture('tenant-update');
+    const discordId = discordIdFixture();
+
+    const createResponse = await post(
+      '/users',
+      {
+        discordId,
+        username: 'BeforeName',
+        password: 'before-pass',
+      },
+      tenant.token,
+    );
+    expect(createResponse.status).toBe(201);
+
+    const updateResponse = await put(
+      `/users/${discordId}`,
+      {
+        username: 'AfterName',
+        role: 'mod',
+        password: 'after-pass',
+      },
+      tenant.token,
+    );
+
+    expect(updateResponse.status).toBe(200);
+    expect(await json(updateResponse)).toEqual(
+      expect.objectContaining({
+        discord_id: discordId,
+        username: 'AfterName',
+        role: 'mod',
+      }),
+    );
+
+    const confirmBefore = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'before-pass',
+      },
+      tenant.token,
+    );
+
+    expect(confirmBefore.status).toBe(200);
+    expect(await json(confirmBefore)).toEqual({
+      is_correct: false,
+      discord_id: discordId,
+    });
+
+    const confirmAfter = await post(
+      `/users/${discordId}/confirm`,
+      {
+        password: 'after-pass',
+      },
+      tenant.token,
+    );
+
+    expect(confirmAfter.status).toBe(200);
+    expect(await json(confirmAfter)).toEqual({
+      is_correct: true,
+      discord_id: discordId,
+    });
   });
 
   it('changes password and confirms credentials', async () => {
@@ -306,14 +371,14 @@ describe('Users (e2e)', () => {
       discord_id: discordId,
     });
 
-    const changeResponse = await post(
-      `/users/${discordId}/password`,
+    const changeResponse = await put(
+      `/users/${discordId}`,
       {
         password: 'new-pass',
       },
       tenant.token,
     );
-    expect(changeResponse.status).toBe(204);
+    expect(changeResponse.status).toBe(200);
 
     const confirmOld = await post(
       `/users/${discordId}/confirm`,
