@@ -116,14 +116,14 @@ describe('Users (e2e)', () => {
         items: [
           expect.objectContaining({
             tenant: tenantA.tenant,
-            discordId: sharedDiscordId,
+            discord_id: sharedDiscordId,
             username: 'TenantAUser',
           }),
         ],
-        pageInfo: {
+        page_info: {
           page: 1,
-          pageSize: 20,
-          hasNextPage: false,
+          page_size: 20,
+          has_next_page: false,
         },
       }),
     );
@@ -135,14 +135,14 @@ describe('Users (e2e)', () => {
         items: [
           expect.objectContaining({
             tenant: tenantB.tenant,
-            discordId: sharedDiscordId,
+            discord_id: sharedDiscordId,
             username: 'TenantBUser',
           }),
         ],
-        pageInfo: {
+        page_info: {
           page: 1,
-          pageSize: 20,
-          hasNextPage: false,
+          page_size: 20,
+          has_next_page: false,
         },
       }),
     );
@@ -175,14 +175,14 @@ describe('Users (e2e)', () => {
 
     const firstPage = (await json(firstPageResponse)) as {
       items: Array<{ id: string }>;
-      pageInfo: { page: number; pageSize: number; hasNextPage: boolean };
+      page_info: { page: number; page_size: number; has_next_page: boolean };
     };
 
     expect(firstPage.items).toHaveLength(2);
-    expect(firstPage.pageInfo).toEqual({
+    expect(firstPage.page_info).toEqual({
       page: 1,
-      pageSize: 2,
-      hasNextPage: true,
+      page_size: 2,
+      has_next_page: true,
     });
 
     const secondPageResponse = await get(
@@ -193,14 +193,14 @@ describe('Users (e2e)', () => {
 
     const secondPage = (await json(secondPageResponse)) as {
       items: Array<{ id: string }>;
-      pageInfo: { page: number; pageSize: number; hasNextPage: boolean };
+      page_info: { page: number; page_size: number; has_next_page: boolean };
     };
 
     expect(secondPage.items).toHaveLength(1);
-    expect(secondPage.pageInfo).toEqual({
+    expect(secondPage.page_info).toEqual({
       page: 2,
-      pageSize: 2,
-      hasNextPage: false,
+      page_size: 2,
+      has_next_page: false,
     });
     expect(firstPage.items[0].id).not.toBe(secondPage.items[0].id);
     expect(firstPage.items[1].id).not.toBe(secondPage.items[0].id);
@@ -270,7 +270,7 @@ describe('Users (e2e)', () => {
     expect(getResponse.status).toBe(200);
     expect(await json(getResponse)).toEqual(
       expect.objectContaining({
-        discordId,
+        discord_id: discordId,
         username,
         tenant: tenant.tenant,
       }),
@@ -302,8 +302,8 @@ describe('Users (e2e)', () => {
     );
     expect(confirmBefore.status).toBe(200);
     expect(await json(confirmBefore)).toEqual({
-      isCorrect: true,
-      discordId,
+      is_correct: true,
+      discord_id: discordId,
     });
 
     const changeResponse = await post(
@@ -324,8 +324,8 @@ describe('Users (e2e)', () => {
     );
     expect(confirmOld.status).toBe(200);
     expect(await json(confirmOld)).toEqual({
-      isCorrect: false,
-      discordId,
+      is_correct: false,
+      discord_id: discordId,
     });
 
     const confirmNew = await post(
@@ -337,8 +337,8 @@ describe('Users (e2e)', () => {
     );
     expect(confirmNew.status).toBe(200);
     expect(await json(confirmNew)).toEqual({
-      isCorrect: true,
-      discordId,
+      is_correct: true,
+      discord_id: discordId,
     });
   });
 
@@ -366,8 +366,8 @@ describe('Users (e2e)', () => {
     );
     expect(confirmResponse.status).toBe(200);
     expect(await json(confirmResponse)).toEqual({
-      isCorrect: false,
-      discordId,
+      is_correct: false,
+      discord_id: discordId,
     });
   });
 

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { User } from '../types/user.type';
 
 export class UserResponseDto {
@@ -8,13 +9,15 @@ export class UserResponseDto {
   @ApiProperty()
   tenant: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'discord_id' })
+  @Expose({ name: 'discord_id' })
   discordId: string;
 
   @ApiProperty()
   username: string;
 
-  @ApiProperty({ type: String, format: 'date-time' })
+  @ApiProperty({ name: 'created_at', type: String, format: 'date-time' })
+  @Expose({ name: 'created_at' })
   createdAt: Date;
 
   constructor(user: User) {

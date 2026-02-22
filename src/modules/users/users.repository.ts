@@ -5,13 +5,9 @@ import { getPageWindow } from '../../common/pagination/utils/page.util';
 import { DatabaseService } from '../database/database.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserAlreadyExistsError } from './users.error';
+import { UserCredentials } from './types/user-credentials.type';
 import { User } from './types/user.type';
 import { PersistenceError } from '../database/database.error';
-
-type UserCredentials = {
-  discordId: string;
-  password: string | null;
-};
 
 @Injectable()
 export class UsersRepository {

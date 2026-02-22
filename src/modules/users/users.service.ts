@@ -8,14 +8,10 @@ import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ConfirmUserDto } from './dtos/confirm-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
+import { ConfirmationResult } from './types/confirmation-result.type';
 import { UserAlreadyExistsError, UserNotFoundError } from './users.error';
 import { User } from './types/user.type';
 import { UsersRepository } from './users.repository';
-
-type ConfirmationResult = {
-  isCorrect: boolean;
-  discordId: string | null;
-};
 
 @Injectable()
 export class UsersService {

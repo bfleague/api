@@ -154,32 +154,32 @@ components:
           type: string
         tenant:
           type: string
-        discordId:
+        discord_id:
           type: string
         username:
           type: string
-        createdAt:
+        created_at:
           type: string
           format: date-time
       required:
         - id
         - tenant
-        - discordId
+        - discord_id
         - username
-        - createdAt
+        - created_at
     PageInfoDto:
       type: object
       properties:
         page:
           type: number
-        pageSize:
+        page_size:
           type: number
-        hasNextPage:
+        has_next_page:
           type: boolean
       required:
         - page
-        - pageSize
-        - hasNextPage
+        - page_size
+        - has_next_page
     UsersPaginatedResponseDto:
       type: object
       properties:
@@ -187,11 +187,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserResponseDto'
-        pageInfo:
+        page_info:
           $ref: '#/components/schemas/PageInfoDto'
       required:
         - items
-        - pageInfo
+        - page_info
     ChangePasswordDto:
       type: object
       properties:
@@ -215,13 +215,13 @@ components:
     ConfirmUserResponseDto:
       type: object
       properties:
-        isCorrect:
+        is_correct:
           type: boolean
-        discordId:
+        discord_id:
           type: string
           nullable: true
       required:
-        - isCorrect
-        - discordId
+        - is_correct
+        - discord_id
 security:
   - bearer: []

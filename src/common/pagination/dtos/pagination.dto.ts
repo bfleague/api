@@ -1,5 +1,6 @@
 import { Type } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { Page } from '../types/page.type';
 import { PageInfoDto } from './page-info.dto';
 
@@ -11,7 +12,8 @@ export function PaginationDto<TSource, TItem>(
     @ApiProperty({ type: itemDto, isArray: true })
     items: TItem[];
 
-    @ApiProperty({ type: PageInfoDto })
+    @ApiProperty({ name: 'page_info', type: PageInfoDto })
+    @Expose({ name: 'page_info' })
     pageInfo: PageInfoDto;
 
     constructor(page: Page<TSource>) {
