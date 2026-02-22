@@ -86,23 +86,106 @@ describe('Users (e2e)', () => {
 
     const tenantAUsersResponse = await get('/users', tenantA.token);
     expect(tenantAUsersResponse.status).toBe(200);
-    expect(await json(tenantAUsersResponse)).toEqual([
+    expect(await json(tenantAUsersResponse)).toEqual(
       expect.objectContaining({
-        tenant: tenantA.tenant,
-        discordId: sharedDiscordId,
-        username: 'TenantAUser',
+        items: [
+          expect.objectContaining({
+            tenant: tenantA.tenant,
+            discordId: sharedDiscordId,
+            username: 'TenantAUser',
+          }),
+        ],
+        pageInfo: {
+          page: 1,
+          pageSize: 20,
+          hasNextPage: false,
+        },
       }),
-    ]);
+    );
 
     const tenantBUsersResponse = await get('/users', tenantB.token);
     expect(tenantBUsersResponse.status).toBe(200);
-    expect(await json(tenantBUsersResponse)).toEqual([
+    expect(await json(tenantBUsersResponse)).toEqual(
       expect.objectContaining({
-        tenant: tenantB.tenant,
-        discordId: sharedDiscordId,
-        username: 'TenantBUser',
+        items: [
+          expect.objectContaining({
+            tenant: tenantB.tenant,
+            discordId: sharedDiscordId,
+            username: 'TenantBUser',
+          }),
+        ],
+        pageInfo: {
+          page: 1,
+          pageSize: 20,
+          hasNextPage: false,
+        },
       }),
-    ]);
+    );
+  });
+
+  it('paginates users with page query', async () => {
+    const tenant = tenantFixture('tenant-pagination');
+
+    await post(
+      '/users',
+      { discordId: discordIdFixture(), username: 'User1' },
+      tenant.token,
+    );
+    await post(
+      '/users',
+      { discordId: discordIdFixture(), username: 'User2' },
+      tenant.token,
+    );
+    await post(
+      '/users',
+      { discordId: discordIdFixture(), username: 'User3' },
+      tenant.token,
+    );
+
+    const firstPageResponse = await get(
+      '/users?page=1&pageSize=2',
+      tenant.token,
+    );
+    expect(firstPageResponse.status).toBe(200);
+
+    const firstPage = (await json(firstPageResponse)) as {
+      items: Array<{ id: string }>;
+      pageInfo: { page: number; pageSize: number; hasNextPage: boolean };
+    };
+
+    expect(firstPage.items).toHaveLength(2);
+    expect(firstPage.pageInfo).toEqual({
+      page: 1,
+      pageSize: 2,
+      hasNextPage: true,
+    });
+
+    const secondPageResponse = await get(
+      '/users?page=2&pageSize=2',
+      tenant.token,
+    );
+    expect(secondPageResponse.status).toBe(200);
+
+    const secondPage = (await json(secondPageResponse)) as {
+      items: Array<{ id: string }>;
+      pageInfo: { page: number; pageSize: number; hasNextPage: boolean };
+    };
+
+    expect(secondPage.items).toHaveLength(1);
+    expect(secondPage.pageInfo).toEqual({
+      page: 2,
+      pageSize: 2,
+      hasNextPage: false,
+    });
+    expect(firstPage.items[0].id).not.toBe(secondPage.items[0].id);
+    expect(firstPage.items[1].id).not.toBe(secondPage.items[0].id);
+  });
+
+  it('validates pagination query', async () => {
+    const tenant = tenantFixture('tenant-invalid-page');
+
+    const response = await get('/users?page=0', tenant.token);
+    expect(response.status).toBe(400);
   });
 
   it('validates the create payload', async () => {

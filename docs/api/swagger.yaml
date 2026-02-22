@@ -21,16 +21,31 @@ paths:
         - users
     get:
       operationId: UsersController_list
-      parameters: []
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            example: 1
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 20
+            type: number
       responses:
         '200':
           description: ''
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserResponseDto'
+                $ref: '#/components/schemas/UsersPaginatedResponseDto'
       tags: *a1
 info:
   title: HaxFootball API
@@ -80,5 +95,30 @@ components:
         - discordId
         - username
         - createdAt
+    PageInfoDto:
+      type: object
+      properties:
+        page:
+          type: number
+        pageSize:
+          type: number
+        hasNextPage:
+          type: boolean
+      required:
+        - page
+        - pageSize
+        - hasNextPage
+    UsersPaginatedResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponseDto'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfoDto'
+      required:
+        - items
+        - pageInfo
 security:
   - bearer: []

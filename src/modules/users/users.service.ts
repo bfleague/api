@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { err, ok, Result } from 'neverthrow';
 import { ok as assert } from 'node:assert/strict';
+import { PagePaginationQueryDto } from '../../common/pagination/dtos/page-pagination-query.dto';
+import { Page } from '../../common/pagination/types/page.type';
+import { paginate } from '../../common/pagination/utils/page.util';
+import { PersistenceError } from '../database/database.error';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserAlreadyExistsError } from './users.error';
 import { User } from './types/user.type';
 import { UsersRepository } from './users.repository';
-import { PersistenceError } from '../database/database.error';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +35,14 @@ export class UsersService {
     return ok(userResult.value);
   }
 
-  list(tenant: string): Promise<Result<User[], PersistenceError>> {
-    return this.repo.findAll(tenant);
+  async list(
+    tenant: string,
+    query: PagePaginationQueryDto,
+  ): Promise<Result<Page<User>, PersistenceError>> {
+    return await this.repo
+      .find(tenant, query.page, query.pageSize)
+      .then((res) =>
+        res.map((rows) => paginate(rows, query.page, query.pageSize)),
+      );
   }
 }

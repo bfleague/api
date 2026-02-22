@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { err, ok, Result } from 'neverthrow';
 import { MysqlError } from '../../common/errors/mysql-error.enum';
+import { getPageWindow } from '../../common/pagination/utils/page.util';
 import { DatabaseService } from '../database/database.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserAlreadyExistsError } from './users.error';
@@ -11,11 +12,19 @@ import { PersistenceError } from '../database/database.error';
 export class UsersRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  findAll(tenant: string): Promise<Result<User[], PersistenceError>> {
-    return this.db.query<User>`
+  async find(
+    tenant: string,
+    page: number,
+    pageSize: number,
+  ): Promise<Result<User[], PersistenceError>> {
+    const { limitPlusOne, offset } = getPageWindow(page, pageSize);
+
+    return await this.db.query<User>`
       SELECT * FROM users
       WHERE tenant = ${tenant}
-      ORDER BY created_at DESC
+      ORDER BY created_at DESC, id DESC
+      LIMIT ${limitPlusOne}
+      OFFSET ${offset}
     `;
   }
 

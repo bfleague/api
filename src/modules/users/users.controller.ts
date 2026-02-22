@@ -5,6 +5,7 @@ import {
   Get,
   InternalServerErrorException,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -12,9 +13,11 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { PagePaginationQueryDto } from '../../common/pagination/dtos/page-pagination-query.dto';
 import { Tenant } from '../auth/decorators/tenant.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
+import { UsersPaginatedResponseDto } from './dtos/users-paginated-response.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
@@ -44,9 +47,12 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOkResponse({ type: UserResponseDto, isArray: true })
-  async list(@Tenant() tenant: string): Promise<UserResponseDto[]> {
-    const result = await this.service.list(tenant);
+  @ApiOkResponse({ type: UsersPaginatedResponseDto })
+  async list(
+    @Tenant() tenant: string,
+    @Query() query: PagePaginationQueryDto,
+  ): Promise<UsersPaginatedResponseDto> {
+    const result = await this.service.list(tenant, query);
 
     if (result.isErr()) {
       switch (result.error.type) {
@@ -55,6 +61,6 @@ export class UsersController {
       }
     }
 
-    return result.value.map((user) => new UserResponseDto(user));
+    return new UsersPaginatedResponseDto(result.value);
   }
 }
