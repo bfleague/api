@@ -1,4 +1,4 @@
 export type UserCredentials = {
-  discordId: string;
+  providerUserId: string;
   password: string | null;
 };

@@ -7,12 +7,12 @@ export class ConfirmUserResponseDto {
   @Expose({ name: 'is_correct' })
   isCorrect: boolean;
 
-  @ApiProperty({ name: 'discord_id', type: String, nullable: true })
-  @Expose({ name: 'discord_id' })
-  discordId: string | null;
+  @ApiProperty({ name: 'provider_user_id', type: String, nullable: true })
+  @Expose({ name: 'provider_user_id' })
+  providerUserId: string | null;
 
   constructor(result: ConfirmationResult) {
     this.isCorrect = result.isCorrect;
-    this.discordId = result.discordId;
+    this.providerUserId = result.providerUserId;
   }
 }

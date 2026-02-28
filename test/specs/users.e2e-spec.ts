@@ -1,5 +1,12 @@
 import { get, json, post, put } from '../support/client';
-import { discordIdFixture, tenantFixture } from '../fixtures';
+import {
+  providerUserIdFixture,
+  tenantFixture,
+  DEFAULT_PROVIDER,
+  ALTERNATE_PROVIDER,
+  userIdentityPath,
+  userIdPath,
+} from '../fixtures';
 
 describe('Users (e2e)', () => {
   it('rejects requests without a bearer token', async () => {
@@ -7,7 +14,8 @@ describe('Users (e2e)', () => {
     expect(getResponse.status).toBe(401);
 
     const postResponse = await post('/users', {
-      discordId: '1000',
+      provider: DEFAULT_PROVIDER,
+      providerUserId: '1000',
       username: 'NoAuth',
     });
     expect(postResponse.status).toBe(401);
@@ -19,7 +27,8 @@ describe('Users (e2e)', () => {
     const response = await post(
       '/users',
       {
-        discordId: discordIdFixture(),
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
         username: 'Alice',
       },
       tenant.token,
@@ -29,20 +38,22 @@ describe('Users (e2e)', () => {
     expect(await json(response)).toEqual(
       expect.objectContaining({
         tenant: tenant.tenant,
+        provider: DEFAULT_PROVIDER,
         username: 'Alice',
         role: 'default',
       }),
     );
   });
 
-  it('returns 409 when creating a duplicate discord user in the same tenant', async () => {
+  it('returns 409 when creating a duplicate provider user in the same tenant', async () => {
     const tenant = tenantFixture('tenant-dup');
-    const discordId = discordIdFixture();
+    const providerUserId = providerUserIdFixture();
 
     const firstResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username: 'Alice',
       },
       tenant.token,
@@ -52,12 +63,40 @@ describe('Users (e2e)', () => {
     const secondResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username: 'AliceAgain',
       },
       tenant.token,
     );
     expect(secondResponse.status).toBe(409);
+  });
+
+  it('allows same provider user id across different providers', async () => {
+    const tenant = tenantFixture('tenant-cross-provider');
+    const providerUserId = providerUserIdFixture();
+
+    const firstResponse = await post(
+      '/users',
+      {
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
+        username: 'DiscordUser',
+      },
+      tenant.token,
+    );
+    expect(firstResponse.status).toBe(201);
+
+    const secondResponse = await post(
+      '/users',
+      {
+        provider: ALTERNATE_PROVIDER,
+        providerUserId,
+        username: 'GoogleUser',
+      },
+      tenant.token,
+    );
+    expect(secondResponse.status).toBe(201);
   });
 
   it('returns 409 when creating a duplicate username in the same tenant', async () => {
@@ -67,7 +106,8 @@ describe('Users (e2e)', () => {
     const firstResponse = await post(
       '/users',
       {
-        discordId: discordIdFixture(),
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
         username,
       },
       tenant.token,
@@ -77,7 +117,8 @@ describe('Users (e2e)', () => {
     const secondResponse = await post(
       '/users',
       {
-        discordId: discordIdFixture(),
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
         username,
       },
       tenant.token,
@@ -88,12 +129,13 @@ describe('Users (e2e)', () => {
   it('isolates users by tenant', async () => {
     const tenantA = tenantFixture('tenant-a');
     const tenantB = tenantFixture('tenant-b');
-    const sharedDiscordId = discordIdFixture();
+    const sharedProviderUserId = providerUserIdFixture();
 
     const tenantAInsert = await post(
       '/users',
       {
-        discordId: sharedDiscordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId: sharedProviderUserId,
         username: 'TenantAUser',
       },
       tenantA.token,
@@ -103,7 +145,8 @@ describe('Users (e2e)', () => {
     const tenantBInsert = await post(
       '/users',
       {
-        discordId: sharedDiscordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId: sharedProviderUserId,
         username: 'TenantBUser',
       },
       tenantB.token,
@@ -117,7 +160,8 @@ describe('Users (e2e)', () => {
         items: [
           expect.objectContaining({
             tenant: tenantA.tenant,
-            discord_id: sharedDiscordId,
+            provider: DEFAULT_PROVIDER,
+            provider_user_id: sharedProviderUserId,
             username: 'TenantAUser',
           }),
         ],
@@ -136,7 +180,8 @@ describe('Users (e2e)', () => {
         items: [
           expect.objectContaining({
             tenant: tenantB.tenant,
-            discord_id: sharedDiscordId,
+            provider: DEFAULT_PROVIDER,
+            provider_user_id: sharedProviderUserId,
             username: 'TenantBUser',
           }),
         ],
@@ -154,17 +199,29 @@ describe('Users (e2e)', () => {
 
     await post(
       '/users',
-      { discordId: discordIdFixture(), username: 'User1' },
+      {
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
+        username: 'User1',
+      },
       tenant.token,
     );
     await post(
       '/users',
-      { discordId: discordIdFixture(), username: 'User2' },
+      {
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
+        username: 'User2',
+      },
       tenant.token,
     );
     await post(
       '/users',
-      { discordId: discordIdFixture(), username: 'User3' },
+      {
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
+        username: 'User3',
+      },
       tenant.token,
     );
 
@@ -221,7 +278,8 @@ describe('Users (e2e)', () => {
     await post(
       '/users',
       {
-        discordId: discordIdFixture(),
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
         username,
       },
       tenant.token,
@@ -230,7 +288,8 @@ describe('Users (e2e)', () => {
     await post(
       '/users',
       {
-        discordId: discordIdFixture(),
+        provider: DEFAULT_PROVIDER,
+        providerUserId: providerUserIdFixture(),
         username: 'OtherUser',
       },
       tenant.token,
@@ -252,26 +311,31 @@ describe('Users (e2e)', () => {
     );
   });
 
-  it('gets a user by discord id', async () => {
+  it('gets a user by provider identity', async () => {
     const tenant = tenantFixture('tenant-get-by-id');
-    const discordId = discordIdFixture();
+    const providerUserId = providerUserIdFixture();
     const username = 'LookupUser';
 
     const createResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username,
       },
       tenant.token,
     );
     expect(createResponse.status).toBe(201);
 
-    const getResponse = await get(`/users/${discordId}`, tenant.token);
+    const getResponse = await get(
+      userIdentityPath(DEFAULT_PROVIDER, providerUserId),
+      tenant.token,
+    );
     expect(getResponse.status).toBe(200);
     expect(await json(getResponse)).toEqual(
       expect.objectContaining({
-        discord_id: discordId,
+        provider: DEFAULT_PROVIDER,
+        provider_user_id: providerUserId,
         username,
         tenant: tenant.tenant,
         role: 'default',
@@ -281,21 +345,23 @@ describe('Users (e2e)', () => {
 
   it('updates user fields with put', async () => {
     const tenant = tenantFixture('tenant-update');
-    const discordId = discordIdFixture();
+    const providerUserId = providerUserIdFixture();
 
     const createResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username: 'BeforeName',
         password: 'before-pass',
       },
       tenant.token,
     );
     expect(createResponse.status).toBe(201);
+    const createdUser = (await json(createResponse)) as { id: string };
 
     const updateResponse = await put(
-      `/users/${discordId}`,
+      userIdPath(createdUser.id),
       {
         username: 'AfterName',
         role: 'mod',
@@ -307,14 +373,15 @@ describe('Users (e2e)', () => {
     expect(updateResponse.status).toBe(200);
     expect(await json(updateResponse)).toEqual(
       expect.objectContaining({
-        discord_id: discordId,
+        provider: DEFAULT_PROVIDER,
+        provider_user_id: providerUserId,
         username: 'AfterName',
         role: 'mod',
       }),
     );
 
     const confirmBefore = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'before-pass',
       },
@@ -324,11 +391,11 @@ describe('Users (e2e)', () => {
     expect(confirmBefore.status).toBe(200);
     expect(await json(confirmBefore)).toEqual({
       is_correct: false,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
 
     const confirmAfter = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'after-pass',
       },
@@ -338,28 +405,30 @@ describe('Users (e2e)', () => {
     expect(confirmAfter.status).toBe(200);
     expect(await json(confirmAfter)).toEqual({
       is_correct: true,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
   });
 
   it('changes password and confirms credentials', async () => {
     const tenant = tenantFixture('tenant-change-password');
-    const discordId = discordIdFixture();
+    const providerUserId = providerUserIdFixture();
     const username = 'PasswordUser';
 
     const createResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username,
         password: 'old-pass',
       },
       tenant.token,
     );
     expect(createResponse.status).toBe(201);
+    const createdUser = (await json(createResponse)) as { id: string };
 
     const confirmBefore = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'old-pass',
       },
@@ -368,11 +437,11 @@ describe('Users (e2e)', () => {
     expect(confirmBefore.status).toBe(200);
     expect(await json(confirmBefore)).toEqual({
       is_correct: true,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
 
     const changeResponse = await put(
-      `/users/${discordId}`,
+      userIdPath(createdUser.id),
       {
         password: 'new-pass',
       },
@@ -381,7 +450,7 @@ describe('Users (e2e)', () => {
     expect(changeResponse.status).toBe(200);
 
     const confirmOld = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'old-pass',
       },
@@ -390,11 +459,11 @@ describe('Users (e2e)', () => {
     expect(confirmOld.status).toBe(200);
     expect(await json(confirmOld)).toEqual({
       is_correct: false,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
 
     const confirmNew = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'new-pass',
       },
@@ -403,27 +472,29 @@ describe('Users (e2e)', () => {
     expect(confirmNew.status).toBe(200);
     expect(await json(confirmNew)).toEqual({
       is_correct: true,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
   });
 
   it('returns false on confirm when user has no password', async () => {
     const tenant = tenantFixture('tenant-confirm-no-password');
-    const discordId = discordIdFixture();
+    const providerUserId = providerUserIdFixture();
     const username = 'NoPasswordUser';
 
     const createResponse = await post(
       '/users',
       {
-        discordId,
+        provider: DEFAULT_PROVIDER,
+        providerUserId,
         username,
       },
       tenant.token,
     );
     expect(createResponse.status).toBe(201);
+    const createdUser = (await json(createResponse)) as { id: string };
 
     const confirmResponse = await post(
-      `/users/${discordId}/confirm`,
+      `${userIdPath(createdUser.id)}/confirm`,
       {
         password: 'any-pass',
       },
@@ -432,7 +503,7 @@ describe('Users (e2e)', () => {
     expect(confirmResponse.status).toBe(200);
     expect(await json(confirmResponse)).toEqual({
       is_correct: false,
-      discord_id: discordId,
+      provider_user_id: providerUserId,
     });
   });
 
@@ -442,7 +513,8 @@ describe('Users (e2e)', () => {
     const response = await post(
       '/users',
       {
-        discordId: 'not-a-number',
+        provider: 'Invalid Provider',
+        providerUserId: '',
         username: '',
       },
       tenant.token,

@@ -71,13 +71,18 @@ export class UsersController {
     return new UsersPaginatedResponseDto(result.value);
   }
 
-  @Get(':id')
+  @Get('provider/:provider/:providerUserId')
   @ApiOkResponse({ type: UserResponseDto })
-  async getByDiscordId(
+  async getByIdentity(
     @Tenant() tenant: string,
-    @Param('id') discordId: string,
+    @Param('provider') provider: string,
+    @Param('providerUserId') providerUserId: string,
   ): Promise<UserResponseDto> {
-    const result = await this.service.getByDiscordId(discordId, tenant);
+    const result = await this.service.getByIdentity(
+      provider,
+      providerUserId,
+      tenant,
+    );
 
     if (result.isErr()) {
       switch (result.error.type) {
@@ -96,10 +101,10 @@ export class UsersController {
   @ApiOkResponse({ type: UserResponseDto })
   async update(
     @Tenant() tenant: string,
-    @Param('id') discordId: string,
+    @Param('id') userId: string,
     @Body() body: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const result = await this.service.update(discordId, body, tenant);
+    const result = await this.service.update(userId, body, tenant);
 
     if (result.isErr()) {
       switch (result.error.type) {
@@ -121,10 +126,10 @@ export class UsersController {
   @ApiOkResponse({ type: ConfirmUserResponseDto })
   async confirm(
     @Tenant() tenant: string,
-    @Param('id') discordId: string,
+    @Param('id') userId: string,
     @Body() body: ConfirmUserDto,
   ): Promise<ConfirmUserResponseDto> {
-    const result = await this.service.confirm(discordId, body, tenant);
+    const result = await this.service.confirm(userId, body, tenant);
 
     if (result.isErr()) {
       switch (result.error.type) {

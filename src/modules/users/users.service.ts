@@ -27,7 +27,11 @@ export class UsersService {
       return err(insertResult.error);
     }
 
-    const userResult = await this.repo.findByDiscordId(dto.discordId, tenant);
+    const userResult = await this.repo.findByIdentity(
+      dto.provider,
+      dto.providerUserId,
+      tenant,
+    );
 
     if (userResult.isErr()) {
       return err(userResult.error);
@@ -49,11 +53,16 @@ export class UsersService {
       );
   }
 
-  async getByDiscordId(
-    discordId: string,
+  async getByIdentity(
+    provider: string,
+    providerUserId: string,
     tenant: string,
   ): Promise<Result<User, UserNotFoundError | PersistenceError>> {
-    const userResult = await this.repo.findByDiscordId(discordId, tenant);
+    const userResult = await this.repo.findByIdentity(
+      provider,
+      providerUserId,
+      tenant,
+    );
 
     if (userResult.isErr()) {
       return err(userResult.error);
@@ -62,7 +71,8 @@ export class UsersService {
     if (!userResult.value) {
       return err({
         type: 'user_not_found',
-        discordId,
+        provider,
+        providerUserId,
       });
     }
 
@@ -70,16 +80,13 @@ export class UsersService {
   }
 
   async update(
-    discordId: string,
+    userId: string,
     dto: UpdateUserDto,
     tenant: string,
   ): Promise<
     Result<User, UserNotFoundError | UserAlreadyExistsError | PersistenceError>
   > {
-    const existingUserResult = await this.repo.findByDiscordId(
-      discordId,
-      tenant,
-    );
+    const existingUserResult = await this.repo.findById(userId, tenant);
 
     if (existingUserResult.isErr()) {
       return err(existingUserResult.error);
@@ -88,21 +95,17 @@ export class UsersService {
     if (!existingUserResult.value) {
       return err({
         type: 'user_not_found',
-        discordId,
+        userId,
       });
     }
 
-    const updateResult = await this.repo.updateByDiscordId(
-      discordId,
-      dto,
-      tenant,
-    );
+    const updateResult = await this.repo.updateById(userId, dto, tenant);
 
     if (updateResult.isErr()) {
       return err(updateResult.error);
     }
 
-    const userResult = await this.repo.findByDiscordId(discordId, tenant);
+    const userResult = await this.repo.findById(userId, tenant);
 
     if (userResult.isErr()) {
       return err(userResult.error);
@@ -114,14 +117,11 @@ export class UsersService {
   }
 
   async confirm(
-    discordId: string,
+    userId: string,
     dto: ConfirmUserDto,
     tenant: string,
   ): Promise<Result<ConfirmationResult, PersistenceError>> {
-    const userResult = await this.repo.findCredentialsByDiscordId(
-      discordId,
-      tenant,
-    );
+    const userResult = await this.repo.findCredentialsById(userId, tenant);
 
     if (userResult.isErr()) {
       return err(userResult.error);
@@ -130,7 +130,7 @@ export class UsersService {
     if (!userResult.value) {
       return ok({
         isCorrect: false,
-        discordId: null,
+        providerUserId: null,
       });
     }
 
@@ -138,7 +138,7 @@ export class UsersService {
       isCorrect:
         userResult.value.password !== null &&
         userResult.value.password === dto.password,
-      discordId: userResult.value.discordId,
+      providerUserId: userResult.value.providerUserId,
     });
   }
 }

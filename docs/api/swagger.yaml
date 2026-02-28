@@ -55,11 +55,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/UsersPaginatedResponseDto'
       tags: *a1
-  /users/{id}:
+  /users/provider/{provider}/{providerUserId}:
     get:
-      operationId: UsersController_getByDiscordId
+      operationId: UsersController_getByIdentity
       parameters:
-        - name: id
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: providerUserId
           required: true
           in: path
           schema:
@@ -72,6 +77,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
       tags: *a1
+  /users/{id}:
     put:
       operationId: UsersController_update
       parameters:
@@ -134,7 +140,10 @@ components:
     CreateUserDto:
       type: object
       properties:
-        discordId:
+        provider:
+          type: string
+          example: discord
+        providerUserId:
           type: string
           example: '123456789012345678'
         username:
@@ -155,7 +164,8 @@ components:
             - default
           example: default
       required:
-        - discordId
+        - provider
+        - providerUserId
         - username
     UserResponseDto:
       type: object
@@ -164,7 +174,9 @@ components:
           type: string
         tenant:
           type: string
-        discord_id:
+        provider:
+          type: string
+        provider_user_id:
           type: string
         username:
           type: string
@@ -177,7 +189,8 @@ components:
       required:
         - id
         - tenant
-        - discord_id
+        - provider
+        - provider_user_id
         - username
         - role
         - created_at
@@ -238,11 +251,11 @@ components:
       properties:
         is_correct:
           type: boolean
-        discord_id:
+        provider_user_id:
           type: string
           nullable: true
       required:
         - is_correct
-        - discord_id
+        - provider_user_id
 security:
   - bearer: []

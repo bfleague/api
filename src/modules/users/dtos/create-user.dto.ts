@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsLowercase,
   IsIn,
-  IsNumberString,
+  Matches,
   IsOptional,
   IsString,
   Length,
@@ -9,9 +10,17 @@ import {
 import { USER_ROLES, UserRole } from '../types/user-role.type';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'discord' })
+  @IsString()
+  @IsLowercase()
+  @Length(2, 32)
+  @Matches(/^[a-z0-9][a-z0-9._-]*$/)
+  provider!: string;
+
   @ApiProperty({ example: '123456789012345678' })
-  @IsNumberString()
-  discordId!: string;
+  @IsString()
+  @Length(1, 191)
+  providerUserId!: string;
 
   @ApiProperty({ minLength: 1, maxLength: 25, example: 'Alice' })
   @IsString()

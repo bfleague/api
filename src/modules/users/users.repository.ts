@@ -41,25 +41,38 @@ export class UsersRepository {
         `;
   }
 
-  async findByDiscordId(
-    discordId: string,
+  async findByIdentity(
+    provider: string,
+    providerUserId: string,
     tenant: string,
   ): Promise<Result<User | null, PersistenceError>> {
     return await this.db.queryOne<User>`
       SELECT * FROM users
       WHERE tenant = ${tenant}
-      AND discord_id = ${discordId}
+      AND provider = ${provider}
+      AND provider_user_id = ${providerUserId}
     `;
   }
 
-  async findCredentialsByDiscordId(
-    discordId: string,
+  async findById(
+    userId: string,
+    tenant: string,
+  ): Promise<Result<User | null, PersistenceError>> {
+    return await this.db.queryOne<User>`
+      SELECT * FROM users
+      WHERE tenant = ${tenant}
+      AND id = ${userId}
+    `;
+  }
+
+  async findCredentialsById(
+    userId: string,
     tenant: string,
   ): Promise<Result<UserCredentials | null, PersistenceError>> {
     return await this.db.queryOne<UserCredentials>`
-      SELECT discord_id, password FROM users
+      SELECT provider_user_id, password FROM users
       WHERE tenant = ${tenant}
-      AND discord_id = ${discordId}
+      AND id = ${userId}
     `;
   }
 
@@ -68,8 +81,8 @@ export class UsersRepository {
     tenant: string,
   ): Promise<Result<void, UserAlreadyExistsError | PersistenceError>> {
     const insertResult = await this.db.query`
-      INSERT INTO users (tenant, discord_id, username, password, role)
-      VALUES (${tenant}, ${input.discordId}, ${input.username}, ${input.password ?? null}, ${input.role ?? 'default'})
+      INSERT INTO users (tenant, provider, provider_user_id, username, password, role)
+      VALUES (${tenant}, ${input.provider}, ${input.providerUserId}, ${input.username}, ${input.password ?? null}, ${input.role ?? 'default'})
     `;
 
     if (insertResult.isErr()) {
@@ -86,8 +99,8 @@ export class UsersRepository {
     return ok();
   }
 
-  async updateByDiscordId(
-    discordId: string,
+  async updateById(
+    userId: string,
     input: UpdateUserDto,
     tenant: string,
   ): Promise<Result<void, UserAlreadyExistsError | PersistenceError>> {
@@ -113,7 +126,7 @@ export class UsersRepository {
       UPDATE users
       SET ${join(changes, ', ')}
       WHERE tenant = ${tenant}
-      AND discord_id = ${discordId}
+      AND id = ${userId}
     `);
 
     if (updateResult.isErr()) {

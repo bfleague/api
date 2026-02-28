@@ -10,9 +10,12 @@ export class UserResponseDto {
   @ApiProperty()
   tenant: string;
 
-  @ApiProperty({ name: 'discord_id' })
-  @Expose({ name: 'discord_id' })
-  discordId: string;
+  @ApiProperty()
+  provider: string;
+
+  @ApiProperty({ name: 'provider_user_id' })
+  @Expose({ name: 'provider_user_id' })
+  providerUserId: string;
 
   @ApiProperty()
   username: string;
@@ -27,7 +30,8 @@ export class UserResponseDto {
   constructor(user: User) {
     this.id = user.id;
     this.tenant = user.tenant;
-    this.discordId = user.discordId;
+    this.provider = user.provider;
+    this.providerUserId = user.providerUserId;
     this.username = user.username;
     this.role = user.role;
     this.createdAt = user.createdAt;

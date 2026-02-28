@@ -4,5 +4,7 @@ export type UserAlreadyExistsError = {
 
 export type UserNotFoundError = {
   type: 'user_not_found';
-  discordId: string;
+  userId?: string;
+  provider?: string;
+  providerUserId?: string;
 };
