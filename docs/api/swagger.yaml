@@ -165,7 +165,7 @@ paths:
       tags: *a1
   /users/{id}:
     put:
-      description: Updates mutable fields (username, password, role) for a user by id.
+      description: Updates mutable fields for a user by id.
       operationId: UsersController_update
       parameters:
         - name: id
