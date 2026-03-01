@@ -4,7 +4,7 @@ export const SWAGGER_PATH = 'api';
 
 export function buildSwaggerConfig() {
   return new DocumentBuilder()
-    .setTitle('HaxFootball API')
+    .setTitle('Hax Brasil API')
     .setVersion('1.0')
     .addBearerAuth(
       {
