@@ -2,6 +2,7 @@ openapi: 3.0.0
 paths:
   /users:
     post:
+      description: Creates a user identity using provider and provider user id.
       operationId: UsersController_create
       parameters: []
       requestBody:
@@ -49,9 +50,11 @@ paths:
                 required:
                   - code
                   - message
+      summary: Create user
       tags: &a1
         - users
     get:
+      description: Lists users with pagination and optional username filter.
       operationId: UsersController_list
       parameters:
         - name: page
@@ -102,9 +105,11 @@ paths:
                 required:
                   - code
                   - message
+      summary: List users
       tags: *a1
   /users/provider/{provider}/{providerUserId}:
     get:
+      description: Fetches a user by provider and provider user id.
       operationId: UsersController_getByIdentity
       parameters:
         - name: provider
@@ -156,9 +161,11 @@ paths:
                 required:
                   - code
                   - message
+      summary: Get user by identity
       tags: *a1
   /users/{id}:
     put:
+      description: Updates mutable fields (username, password, role) for a user by id.
       operationId: UsersController_update
       parameters:
         - name: id
@@ -227,9 +234,13 @@ paths:
                 required:
                   - code
                   - message
+      summary: Update user by id
       tags: *a1
   /users/{id}/confirm:
     post:
+      description:
+        Validates the provided password for a user id and returns whether
+        it matches.
       operationId: UsersController_confirm
       parameters:
         - name: id
@@ -266,6 +277,7 @@ paths:
                 required:
                   - code
                   - message
+      summary: Confirm user credentials
       tags: *a1
 info:
   title: Hax Brasil API

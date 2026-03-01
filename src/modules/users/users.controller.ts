@@ -18,6 +18,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { Tenant } from '../auth/decorators/tenant.decorator';
@@ -41,6 +42,10 @@ export class UsersController {
   constructor(private readonly service: UsersService) {}
 
   @Post()
+  @ApiOperation({
+    summary: 'Create user',
+    description: 'Creates a user identity using provider and provider user id.',
+  })
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ type: UserResponseDto })
   @ApiConflictResponse(apiErrorResponse(API_ERRORS.USER_ALREADY_EXISTS))
@@ -68,6 +73,10 @@ export class UsersController {
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'List users',
+    description: 'Lists users with pagination and optional username filter.',
+  })
   @ApiOkResponse({ type: UsersPaginatedResponseDto })
   @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async list(
@@ -89,6 +98,10 @@ export class UsersController {
   }
 
   @Get('provider/:provider/:providerUserId')
+  @ApiOperation({
+    summary: 'Get user by identity',
+    description: 'Fetches a user by provider and provider user id.',
+  })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiNotFoundResponse(apiErrorResponse(API_ERRORS.USER_NOT_FOUND))
   @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
@@ -120,6 +133,10 @@ export class UsersController {
   }
 
   @Put(':id')
+  @ApiOperation({
+    summary: 'Update user by id',
+    description: 'Updates mutable fields for a user by id.',
+  })
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiNotFoundResponse(apiErrorResponse(API_ERRORS.USER_NOT_FOUND))
@@ -154,6 +171,11 @@ export class UsersController {
 
   @Post(':id/confirm')
   @HttpCode(200)
+  @ApiOperation({
+    summary: 'Confirm user credentials',
+    description:
+      'Validates the provided password for a user id and returns whether it matches.',
+  })
   @ApiBody({ type: ConfirmUserDto })
   @ApiOkResponse({ type: ConfirmUserResponseDto })
   @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
