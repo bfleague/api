@@ -17,6 +17,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
+        '409':
+          description: ''
+        '500':
+          description: ''
       tags: &a1
         - users
     get:
@@ -54,6 +58,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UsersPaginatedResponseDto'
+        '500':
+          description: ''
       tags: *a1
   /users/provider/{provider}/{providerUserId}:
     get:
@@ -76,6 +82,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: ''
+        '500':
+          description: ''
       tags: *a1
   /users/{id}:
     put:
@@ -99,6 +109,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: ''
+        '409':
+          description: ''
+        '500':
+          description: ''
       tags: *a1
   /users/{id}/confirm:
     post:
@@ -122,6 +138,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConfirmUserResponseDto'
+        '500':
+          description: ''
       tags: *a1
 info:
   title: HaxFootball API

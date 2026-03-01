@@ -13,7 +13,10 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -35,6 +38,8 @@ export class UsersController {
   @Post()
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ type: UserResponseDto })
+  @ApiConflictResponse()
+  @ApiInternalServerErrorResponse()
   async create(
     @Tenant() tenant: string,
     @Body() body: CreateUserDto,
@@ -55,6 +60,7 @@ export class UsersController {
 
   @Get()
   @ApiOkResponse({ type: UsersPaginatedResponseDto })
+  @ApiInternalServerErrorResponse()
   async list(
     @Tenant() tenant: string,
     @Query() query: ListUsersQueryDto,
@@ -73,6 +79,8 @@ export class UsersController {
 
   @Get('provider/:provider/:providerUserId')
   @ApiOkResponse({ type: UserResponseDto })
+  @ApiNotFoundResponse()
+  @ApiInternalServerErrorResponse()
   async getByIdentity(
     @Tenant() tenant: string,
     @Param('provider') provider: string,
@@ -99,6 +107,9 @@ export class UsersController {
   @Put(':id')
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: UserResponseDto })
+  @ApiNotFoundResponse()
+  @ApiConflictResponse()
+  @ApiInternalServerErrorResponse()
   async update(
     @Tenant() tenant: string,
     @Param('id') userId: string,
@@ -124,6 +135,7 @@ export class UsersController {
   @HttpCode(200)
   @ApiBody({ type: ConfirmUserDto })
   @ApiOkResponse({ type: ConfirmUserResponseDto })
+  @ApiInternalServerErrorResponse()
   async confirm(
     @Tenant() tenant: string,
     @Param('id') userId: string,
