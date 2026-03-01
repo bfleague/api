@@ -18,9 +18,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
         '409':
-          description: ''
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: user_already_exists
+                  message:
+                    type: string
+                    example: User already exists
+                required:
+                  - code
+                  - message
         '500':
-          description: ''
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: persistence_error
+                  message:
+                    type: string
+                    example: Unexpected error
+                required:
+                  - code
+                  - message
       tags: &a1
         - users
     get:
@@ -59,7 +87,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/UsersPaginatedResponseDto'
         '500':
-          description: ''
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: persistence_error
+                  message:
+                    type: string
+                    example: Unexpected error
+                required:
+                  - code
+                  - message
       tags: *a1
   /users/provider/{provider}/{providerUserId}:
     get:
@@ -83,9 +125,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
         '404':
-          description: ''
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: user_not_found
+                  message:
+                    type: string
+                    example: User not found
+                required:
+                  - code
+                  - message
         '500':
-          description: ''
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: persistence_error
+                  message:
+                    type: string
+                    example: Unexpected error
+                required:
+                  - code
+                  - message
       tags: *a1
   /users/{id}:
     put:
@@ -110,11 +180,53 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponseDto'
         '404':
-          description: ''
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: user_not_found
+                  message:
+                    type: string
+                    example: User not found
+                required:
+                  - code
+                  - message
         '409':
-          description: ''
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: user_already_exists
+                  message:
+                    type: string
+                    example: User already exists
+                required:
+                  - code
+                  - message
         '500':
-          description: ''
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: persistence_error
+                  message:
+                    type: string
+                    example: Unexpected error
+                required:
+                  - code
+                  - message
       tags: *a1
   /users/{id}/confirm:
     post:
@@ -139,7 +251,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConfirmUserResponseDto'
         '500':
-          description: ''
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: persistence_error
+                  message:
+                    type: string
+                    example: Unexpected error
+                required:
+                  - code
+                  - message
       tags: *a1
 info:
   title: HaxFootball API

@@ -29,6 +29,11 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersPaginatedResponseDto } from './dtos/users-paginated-response.dto';
 import { UsersService } from './users.service';
+import {
+  API_ERRORS,
+  apiErrorPayload,
+  apiErrorResponse,
+} from '../../common/errors/api-error-response.util';
 
 @ApiTags('users')
 @Controller('users')
@@ -38,8 +43,8 @@ export class UsersController {
   @Post()
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ type: UserResponseDto })
-  @ApiConflictResponse()
-  @ApiInternalServerErrorResponse()
+  @ApiConflictResponse(apiErrorResponse(API_ERRORS.USER_ALREADY_EXISTS))
+  @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async create(
     @Tenant() tenant: string,
     @Body() body: CreateUserDto,
@@ -49,9 +54,13 @@ export class UsersController {
     if (result.isErr()) {
       switch (result.error.type) {
         case 'user_already_exists':
-          throw new ConflictException('User already exists');
+          throw new ConflictException(
+            apiErrorPayload(API_ERRORS.USER_ALREADY_EXISTS),
+          );
         case 'persistence_error':
-          throw new InternalServerErrorException('Unexpected error');
+          throw new InternalServerErrorException(
+            apiErrorPayload(API_ERRORS.PERSISTENCE),
+          );
       }
     }
 
@@ -60,7 +69,7 @@ export class UsersController {
 
   @Get()
   @ApiOkResponse({ type: UsersPaginatedResponseDto })
-  @ApiInternalServerErrorResponse()
+  @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async list(
     @Tenant() tenant: string,
     @Query() query: ListUsersQueryDto,
@@ -70,7 +79,9 @@ export class UsersController {
     if (result.isErr()) {
       switch (result.error.type) {
         case 'persistence_error':
-          throw new InternalServerErrorException('Unexpected error');
+          throw new InternalServerErrorException(
+            apiErrorPayload(API_ERRORS.PERSISTENCE),
+          );
       }
     }
 
@@ -79,8 +90,8 @@ export class UsersController {
 
   @Get('provider/:provider/:providerUserId')
   @ApiOkResponse({ type: UserResponseDto })
-  @ApiNotFoundResponse()
-  @ApiInternalServerErrorResponse()
+  @ApiNotFoundResponse(apiErrorResponse(API_ERRORS.USER_NOT_FOUND))
+  @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async getByIdentity(
     @Tenant() tenant: string,
     @Param('provider') provider: string,
@@ -95,9 +106,13 @@ export class UsersController {
     if (result.isErr()) {
       switch (result.error.type) {
         case 'user_not_found':
-          throw new NotFoundException('User not found');
+          throw new NotFoundException(
+            apiErrorPayload(API_ERRORS.USER_NOT_FOUND),
+          );
         case 'persistence_error':
-          throw new InternalServerErrorException('Unexpected error');
+          throw new InternalServerErrorException(
+            apiErrorPayload(API_ERRORS.PERSISTENCE),
+          );
       }
     }
 
@@ -107,9 +122,9 @@ export class UsersController {
   @Put(':id')
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: UserResponseDto })
-  @ApiNotFoundResponse()
-  @ApiConflictResponse()
-  @ApiInternalServerErrorResponse()
+  @ApiNotFoundResponse(apiErrorResponse(API_ERRORS.USER_NOT_FOUND))
+  @ApiConflictResponse(apiErrorResponse(API_ERRORS.USER_ALREADY_EXISTS))
+  @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async update(
     @Tenant() tenant: string,
     @Param('id') userId: string,
@@ -120,11 +135,17 @@ export class UsersController {
     if (result.isErr()) {
       switch (result.error.type) {
         case 'user_not_found':
-          throw new NotFoundException('User not found');
+          throw new NotFoundException(
+            apiErrorPayload(API_ERRORS.USER_NOT_FOUND),
+          );
         case 'user_already_exists':
-          throw new ConflictException('User already exists');
+          throw new ConflictException(
+            apiErrorPayload(API_ERRORS.USER_ALREADY_EXISTS),
+          );
         case 'persistence_error':
-          throw new InternalServerErrorException('Unexpected error');
+          throw new InternalServerErrorException(
+            apiErrorPayload(API_ERRORS.PERSISTENCE),
+          );
       }
     }
 
@@ -135,7 +156,7 @@ export class UsersController {
   @HttpCode(200)
   @ApiBody({ type: ConfirmUserDto })
   @ApiOkResponse({ type: ConfirmUserResponseDto })
-  @ApiInternalServerErrorResponse()
+  @ApiInternalServerErrorResponse(apiErrorResponse(API_ERRORS.PERSISTENCE))
   async confirm(
     @Tenant() tenant: string,
     @Param('id') userId: string,
@@ -146,7 +167,9 @@ export class UsersController {
     if (result.isErr()) {
       switch (result.error.type) {
         case 'persistence_error':
-          throw new InternalServerErrorException('Unexpected error');
+          throw new InternalServerErrorException(
+            apiErrorPayload(API_ERRORS.PERSISTENCE),
+          );
       }
     }
 
