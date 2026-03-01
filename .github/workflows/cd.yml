@@ -64,7 +64,7 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
-          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           APP_DIR: /opt/haxbrasil-api
           CONTAINER_NAME: haxbrasil-api
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
