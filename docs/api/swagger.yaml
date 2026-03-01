@@ -268,7 +268,7 @@ paths:
                   - message
       tags: *a1
 info:
-  title: HaxFootball API
+  title: Hax Brasil API
   description: ''
   version: '1.0'
   contact: {}
