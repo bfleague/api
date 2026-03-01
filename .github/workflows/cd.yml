@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/haxfootball-api
+  IMAGE_NAME: ${{ github.repository_owner }}/haxbrasil-api
 
 jobs:
   build_and_push:
@@ -65,8 +65,8 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          APP_DIR: /opt/haxfootball-api
-          CONTAINER_NAME: haxfootball-api
+          APP_DIR: /opt/haxbrasil-api
+          CONTAINER_NAME: haxbrasil-api
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
           API_HOST_PORT: ${{ secrets.API_HOST_PORT }}
