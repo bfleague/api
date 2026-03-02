@@ -328,8 +328,6 @@ components:
       properties:
         id:
           type: string
-        tenant:
-          type: string
         provider:
           type: string
         provider_user_id:
@@ -344,7 +342,6 @@ components:
           format: date-time
       required:
         - id
-        - tenant
         - provider
         - provider_user_id
         - username

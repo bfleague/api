@@ -8,9 +8,6 @@ export class UserResponseDto {
   id: string;
 
   @ApiProperty()
-  tenant: string;
-
-  @ApiProperty()
   provider: string;
 
   @ApiProperty({ name: 'provider_user_id' })
@@ -29,7 +26,6 @@ export class UserResponseDto {
 
   constructor(user: User) {
     this.id = user.id;
-    this.tenant = user.tenant;
     this.provider = user.provider;
     this.providerUserId = user.providerUserId;
     this.username = user.username;

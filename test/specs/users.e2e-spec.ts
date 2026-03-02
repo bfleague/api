@@ -37,7 +37,6 @@ describe('Users (e2e)', () => {
     expect(response.status).toBe(201);
     expect(await json(response)).toEqual(
       expect.objectContaining({
-        tenant: tenant.tenant,
         provider: DEFAULT_PROVIDER,
         username: 'Alice',
         role: 'default',
@@ -159,7 +158,6 @@ describe('Users (e2e)', () => {
       expect.objectContaining({
         items: [
           expect.objectContaining({
-            tenant: tenantA.tenant,
             provider: DEFAULT_PROVIDER,
             provider_user_id: sharedProviderUserId,
             username: 'TenantAUser',
@@ -179,7 +177,6 @@ describe('Users (e2e)', () => {
       expect.objectContaining({
         items: [
           expect.objectContaining({
-            tenant: tenantB.tenant,
             provider: DEFAULT_PROVIDER,
             provider_user_id: sharedProviderUserId,
             username: 'TenantBUser',
@@ -337,7 +334,6 @@ describe('Users (e2e)', () => {
         provider: DEFAULT_PROVIDER,
         provider_user_id: providerUserId,
         username,
-        tenant: tenant.tenant,
         role: 'default',
       }),
     );
